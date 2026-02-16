@@ -1,0 +1,51 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: crud-product-config
+data:
+  PORT: "3000"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: crud-product
+  labels:
+    app: crud-product
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: crud-product
+  template:
+    metadata:
+      labels:
+        app: crud-product
+    spec:
+      containers:
+        - name: crud-product
+          image: farinojl/crud-product:v1.1.0
+          ports:
+            - containerPort: 3000
+          envFrom:
+            - configMapRef:
+                name: crud-product-config
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "100m"
+            limits:
+              memory: "128Mi"
+              cpu: "250m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: crud-product
+spec:
+  selector:
+    app: crud-product
+  ports:
+    - port: 80
+      targetPort: 3000
+      nodePort: 30008
+  type: NodePort
